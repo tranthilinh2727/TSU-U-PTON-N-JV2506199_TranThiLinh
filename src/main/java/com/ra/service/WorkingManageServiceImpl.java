@@ -1,4 +1,4 @@
-package com.ra.service.impl;
+package com.ra.service;
 
 import com.ra.model.WorkingManagement;
 import com.ra.repository.WorkingManageRepository;
@@ -7,11 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
 @Service
+@Transactional
 public class WorkingManageServiceImpl implements WorkingManageService {
 
     @Autowired
@@ -73,14 +75,19 @@ public class WorkingManageServiceImpl implements WorkingManageService {
     private void handleImageUpload(WorkingManagement working, MultipartFile imageFile) {
         if (imageFile != null && !imageFile.isEmpty()) {
             try {
-                String fileName = imageFile.getOriginalFilename();
+                String fileName = System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
                 String uploadPath = "uploads/" + fileName;
                 File dest = new File(uploadPath);
+                dest.getParentFile().mkdirs(); // tạo thư mục nếu chưa có
                 imageFile.transferTo(dest);
                 working.setWorkingImage("/" + uploadPath);
             } catch (IOException e) {
                 throw new RuntimeException("Lỗi khi upload ảnh", e);
             }
+        } else if (working.getWorkingImage() == null) {
+            working.setWorkingImage("");
         }
     }
+
 }
+
